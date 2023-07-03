@@ -1,5 +1,6 @@
 import abc
 import socket
+import pickle
 from threading import Thread
 
 
@@ -25,21 +26,21 @@ class Client(__BaseClient):
         self.username = username
         self.__host = host
         self.__port = port
-        self.__other_users = []
         
         self.__client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__client.connect((self.__host, self.__port,))
+        self.__client.send(self.username.encode())
 
     def _send_message(self):
         while True:
-            message = input(f"({self.username}): ")
+            message = input()
             encoded_message = message.encode()
             self.__client.send(encoded_message)
 
     def _receive_message(self):
         while True:
-            message = self.__client.recv(2048)
-            print("(not me): " + message.decode())
+            message = pickle.loads(self.__client.recv(2048))
+            print(f"({message[0].decode()}): {message[1].decode()}")
 
     def start(self):
         receiver = Thread(target=self._receive_message)
