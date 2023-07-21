@@ -10,10 +10,6 @@ class __BaseServer(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def set_server(self):
-        pass
-
-    @abc.abstractmethod
     def _send_message(self, message: str):
         pass
 
