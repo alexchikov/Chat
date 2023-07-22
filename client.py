@@ -1,7 +1,9 @@
 import abc
 import socket
+import sys
 import pickle
-from threading import Thread
+import logging
+from threading import Thread, Event
 
 
 class __BaseClient(abc.ABC):
@@ -26,26 +28,36 @@ class Client(__BaseClient):
         self.username = username
         self.__host = host
         self.__port = port
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(levelname)s %(asctime)s: %(message)s")
         
         self.__client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.__client.connect((self.__host, self.__port,))
-        self.__client.send(self.username.encode())
+        try:
+            self.__client.connect((self.__host, self.__port,))
+            self.__client.send(self.username.encode())
+        except (ConnectionError):
+            logging.critical("there's some issues with connection to server. Check written host and port and try again with restart an app")
+            exit()
 
     def _send_message(self):
         while True:
             message = input()
             if message == "\exit":
                 self.__client.close()
+                return
             else:
                 encoded_message = message.encode()
                 self.__client.send(encoded_message)
 
     def _receive_message(self):
         while True:
-            message = pickle.loads(self.__client.recv(2048))
-            print(f"({message[0].decode()}): {message[1].decode()}")
-
+            try:
+                message = pickle.loads(self.__client.recv(2048))
+                print(f"({message[0].decode()}): {message[1].decode()}")
+            except pickle.UnpicklingError:
+                break
+            
     def start(self):
+        p2k = Event()
         receiver = Thread(target=self._receive_message)
         receiver.start()
         sendler = Thread(target=self._send_message)
