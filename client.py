@@ -34,8 +34,11 @@ class Client(__BaseClient):
     def _send_message(self):
         while True:
             message = input()
-            encoded_message = message.encode()
-            self.__client.send(encoded_message)
+            if message == "\exit":
+                self.__client.close()
+            else:
+                encoded_message = message.encode()
+                self.__client.send(encoded_message)
 
     def _receive_message(self):
         while True:
