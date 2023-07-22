@@ -57,7 +57,6 @@ class Client(__BaseClient):
                 break
             
     def start(self):
-        p2k = Event()
         receiver = Thread(target=self._receive_message)
         receiver.start()
         sendler = Thread(target=self._send_message)
